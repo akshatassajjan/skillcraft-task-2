@@ -84,18 +84,6 @@ The application is optimized for:
 
 ---
 
-## 📸 Screenshots
-
-
----
-
-## 🔗 Live Demo
-
-Add your GitHub Pages link here:
-
-
-
----
 
 ## 🎓 Internship Details
 
