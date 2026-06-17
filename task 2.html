@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Stopwatch Pro</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    margin:0;
+    background:#0f172a;
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    width:90%;
+    max-width:800px;
+    background:rgba(255,255,255,.08);
+    padding:24px;
+    border-radius:16px;
+    text-align:center;
+}
+
+button{
+    margin:5px;
+    padding:10px 16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+#display{
+    font-size:48px;
+    margin:20px;
+}
+
+ul{
+    list-style:none;
+    padding:0;
+}
+
+li{
+    padding:6px;
+    margin:4px;
+    background:rgba(255,255,255,.08);
+}
+
+.light{
+    background:#f5f5f5;
+    color:#111;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>⏱ Advanced Stopwatch Pro</h1>
+
+    <div id="clock"></div>
+
+    <div id="display">00:00:00.000</div>
+
+    <button onclick="start()">Start</button>
+    <button onclick="pauseSW()">Pause</button>
+    <button onclick="resetSW()">Reset</button>
+    <button onclick="lap()">Lap</button>
+    <button onclick="toggleTheme()">Theme</button>
+    <button onclick="downloadLaps()">Export</button>
+    <button onclick="document.documentElement.requestFullscreen()">
+        Fullscreen
+    </button>
+
+    <h3>Statistics</h3>
+    <div id="stats">Laps: 0</div>
+
+    <ul id="laps"></ul>
+
+</div>
+
+<script>
+
+let startTime;
+let elapsed = 0;
+let timer = null;
+
+const display = document.getElementById('display');
+const lapsEl = document.getElementById('laps');
+
+function update(){
+
+    let t = Date.now() - startTime + elapsed;
+
+    let ms = t % 1000;
+    let s = Math.floor(t / 1000) % 60;
+    let m = Math.floor(t / 60000) % 60;
+    let h = Math.floor(t / 3600000);
+
+    display.textContent =
+        `${String(h).padStart(2,'0')}:` +
+        `${String(m).padStart(2,'0')}:` +
+        `${String(s).padStart(2,'0')}.` +
+        `${String(ms).padStart(3,'0')}`;
+
+    localStorage.setItem('sw_display', display.textContent);
+}
+
+function start(){
+
+    if(timer) return;
+
+    startTime = Date.now();
+
+    timer = setInterval(update,10);
+}
+
+function pauseSW(){
+
+    if(!timer) return;
+
+    clearInterval(timer);
+
+    elapsed += Date.now() - startTime;
+
+    timer = null;
+}
+
+function resetSW(){
+
+    clearInterval(timer);
+
+    timer = null;
+
+    elapsed = 0;
+
+    display.textContent = '00:00:00.000';
+
+    lapsEl.innerHTML = '';
+
+    saveStats();
+}
+
+function lap(){
+
+    if(!timer) return;
+
+    let li = document.createElement('li');
+
+    li.textContent =
+        'Lap ' +
+        (lapsEl.children.length + 1) +
+        ' : ' +
+        display.textContent;
+
+    lapsEl.prepend(li);
+
+    saveStats();
+}
+
+function saveStats(){
+
+    document.getElementById('stats').textContent =
+        'Laps: ' + lapsEl.children.length;
+}
+
+function toggleTheme(){
+
+    document.body.classList.toggle('light');
+}
+
+function downloadLaps(){
+
+    let txt =
+        [...lapsEl.children]
+        .map(x => x.textContent)
+        .join('\n');
+
+    let a = document.createElement('a');
+
+    a.href = URL.createObjectURL(new Blob([txt]));
+
+    a.download = 'laps.txt';
+
+    a.click();
+}
+
+setInterval(() => {
+
+    document.getElementById('clock').textContent =
+        new Date().toLocaleString();
+
+},1000);
+
+document.addEventListener('keydown', e => {
+
+    if(e.code === 'Space'){
+        timer ? pauseSW() : start();
+        e.preventDefault();
+    }
+
+    if(e.key === 'r'){
+        resetSW();
+    }
+
+    if(e.key === 'l'){
+        lap();
+    }
+});
+
+</script>
+
+</body>
+</html>
